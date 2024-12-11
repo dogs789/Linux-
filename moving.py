@@ -34,9 +34,8 @@ def read_light():
 
 # LED 밝기 조절 함수 (PWM 사용)
 def set_led_brightness(brightness):
-    # 조도 값에 반비례하여 LED 밝기 설정 (조도 값이 클수록 LED는 어두워짐)
-    # (1023 - brightness)는 밝기가 어두워질수록 증가하도록 설정
-    duty_cycle = ((1023 - brightness) / 1023) * 100  # 반비례 관계로 밝기 설정
+    # 조도 값에 따라 LED 밝기 설정 (0-1023의 범위를 0-100%로 변환)
+    duty_cycle = (brightness / 1023) * 100
     pwm.ChangeDutyCycle(duty_cycle)
 
 # 메인 코드
@@ -51,7 +50,7 @@ try:
             # GY-302 센서로부터 조도 값 읽기
             light = read_light()
             print(f"now JODO value: {light} lx")
-            # LED 밝기 조절 (반비례 관계)
+            # LED 밝기 조절
             set_led_brightness(light)
             last_motion_time = time.time()  # 모션 감지 시간 갱신
         else:
