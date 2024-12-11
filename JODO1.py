@@ -15,6 +15,10 @@ GPIO.setup(LED_PIN, GPIO.OUT)
 # I2C 버스 설정
 bus = smbus2.SMBus(1)  # 1번 I2C 버스를 사용
 
+# PWM 객체 전역 변수로 선언
+pwm = GPIO.PWM(LED_PIN, 1000)  # 1kHz 주파수로 PWM 설정
+pwm.start(0)  # PWM 시작, 초기값 0% (꺼짐)
+
 # GY-302(BH1750) 센서에서 데이터 읽기 함수
 def read_light():
     # 센서에 'One-time High-Resolution Mode' 명령 보내기
@@ -28,29 +32,25 @@ def read_light():
 
 # LED 밝기 조절 함수 (PWM 사용)
 def set_led_brightness(brightness):
-    pwm = GPIO.PWM(LED_PIN, 1000)  # 1kHz 주파수로 PWM 설정
-    pwm.start(0)  # 초기 값 0% (꺼짐)
-    
     # 조도 값에 따라 LED 밝기 설정 (0-1023의 범위를 0-100%로 변환)
     duty_cycle = (brightness / 1023) * 100
     pwm.ChangeDutyCycle(duty_cycle)
     
-    return pwm
-
 # 메인 코드
 try:
     while True:
         light = read_light()  # GY-302 센서로부터 조도 값 읽기
-        print(f"now JODO value: {light} lx")
+        print(f"현재 조도 값: {light} lx")
         
         # LED 밝기 조절
-        pwm = set_led_brightness(light)
+        set_led_brightness(light)
         
         # 1초마다 값을 갱신
         time.sleep(1)
         
 except KeyboardInterrupt:
-    print("end")
+    print("프로그램 종료")
     
 finally:
+    pwm.stop()  # 프로그램 종료 시 PWM 멈추기
     GPIO.cleanup()  # GPIO 리소스 정리
